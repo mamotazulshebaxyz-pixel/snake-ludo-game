@@ -7,12 +7,27 @@
 </head>
 <body>
   <h1>শাপ-সিঁড়ি গেম</h1>
-  <div id="board"></div>
+  
+  <div class="board-container">
+    <div id="board"></div>
+    <svg class="overlay" id="svg-overlay"></svg>
+  </div>
+
   <div class="controls">
+    <div class="dice-container" onclick="rollDice()">
+      <div id="dice" class="dice">
+        <div class="face front">1</div>
+        <div class="face back">6</div>
+        <div class="face right">3</div>
+        <div class="face left">4</div>
+        <div class="face top">5</div>
+        <div class="face bottom">2</div>
+      </div>
+    </div>
     <button onclick="rollDice()">ছক্কা মারুন</button>
-    <p>ছক্কার মান: <span id="dice-val">0</span></p>
     <p>অবস্থান: <span id="player-pos">1</span></p>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
