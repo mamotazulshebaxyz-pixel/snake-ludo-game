@@ -2,20 +2,30 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>শাপ-সিঁড়ি গেম</title>
+  <title>শাপ-সিঁড়ি মাল্টিপ্লেয়ার গেম</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>শাপ-সিঁড়ি গেম</h1>
+  <h1>শাপ-সিঁড়ি গেম (১-১০০)</h1>
   
+  <div class="setup">
+    <label>প্লেয়ার সংখ্যা: </label>
+    <select id="player-count" onchange="resetGame()">
+      <option value="2">২ জন</option>
+      <option value="3">৩ জন</option>
+      <option value="4">৪ জন</option>
+    </select>
+  </div>
+
   <div class="game-container">
     <div id="board"></div>
-    <canvas id="canvas" width="400" height="400"></canvas>
+    <div id="players-layer"></div>
   </div>
 
   <div class="controls">
+    <p id="turn-text">প্লেয়ার ১-এর দান</p>
     <button onclick="rollDice()">ছক্কা মারুন</button>
-    <p>ছক্কার মান: <span id="dice-val">0</span> | অবস্থান: <span id="player-pos">1</span></p>
+    <p>ছক্কার মান: <span id="dice-val">0</span></p>
   </div>
 
   <script src="script.js"></script>
