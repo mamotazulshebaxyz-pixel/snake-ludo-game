@@ -1,11 +1,12 @@
-// ওভারল্যাপ ছাড়াই আলাদা আলাদা ঘরে সাপ ও মইয়ের পজিশন
 const snakes = { 98: 40, 84: 58, 62: 19, 36: 6, 27: 5 };
 const ladders = { 4: 25, 12: 50, 29: 74, 42: 81, 67: 88 };
 
 let numPlayers = 2;
-let positions = [1, 1, 1, 1];
+let positions = [0, 0, 0, 0]; // 0 মানে গেমের বাইরে
 let currentPlayer = 0;
 let isRolling = false;
+let waitingForMove = false;
+let currentDiceVal = 0;
 
 function initBoard() {
   const board = document.getElementById('board');
@@ -33,6 +34,7 @@ function createPlayers() {
     const p = document.createElement('div');
     p.className = `player p-${i}`;
     p.id = `player-${i}`;
+    p.onclick = () => onPlayerClick(i);
     layer.appendChild(p);
   }
   updatePositions();
@@ -40,6 +42,7 @@ function createPlayers() {
 }
 
 function getCoords(num) {
+  if (num === 0) return { x: 15, y: 465 }; // বাইরে থাকার পজিশন
   const cell = document.getElementById(`cell-${num}`);
   if (!cell) return { x: 0, y: 0 };
   const rect = cell.getBoundingClientRect();
@@ -47,24 +50,17 @@ function getCoords(num) {
   return { x: rect.left - parent.left + rect.width / 2, y: rect.top - parent.top + rect.height / 2 };
 }
 
-// সুন্দর গ্রাফিক্সের সাপ ও মই আঁকার ফাংশন
 function drawObjects() {
   const svg = document.getElementById('svg-layer');
   svg.innerHTML = '';
 
   // মই আঁকা
   Object.entries(ladders).forEach(([from, to]) => {
-    const p1 = getCoords(from);
-    const p2 = getCoords(to);
-    
-    const dx = p2.x - p1.x;
-    const dy = p2.y - p1.y;
-    const len = Math.hypot(dx, dy);
-    const angle = Math.atan2(dy, dx);
-    const perpX = Math.sin(angle) * 8;
-    const perpY = -Math.cos(angle) * 8;
+    const p1 = getCoords(from), p2 = getCoords(to);
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.hypot(dx, dy), angle = Math.atan2(dy, dx);
+    const perpX = Math.sin(angle) * 8, perpY = -Math.cos(angle) * 8;
 
-    // মইয়ের দুই পাশের রেলিং
     const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line1.setAttribute('x1', p1.x + perpX); line1.setAttribute('y1', p1.y + perpY);
     line1.setAttribute('x2', p2.x + perpX); line1.setAttribute('y2', p2.y + perpY);
@@ -77,11 +73,9 @@ function drawObjects() {
 
     svg.appendChild(line1); svg.appendChild(line2);
 
-    // মইয়ের ধাপসমূহ
     const steps = Math.floor(len / 18);
     for (let i = 1; i < steps; i++) {
-      const stepX = p1.x + (dx * (i / steps));
-      const stepY = p1.y + (dy * (i / steps));
+      const stepX = p1.x + (dx * (i / steps)), stepY = p1.y + (dy * (i / steps));
       const stepLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       stepLine.setAttribute('x1', stepX + perpX); stepLine.setAttribute('y1', stepY + perpY);
       stepLine.setAttribute('x2', stepX - perpX); stepLine.setAttribute('y2', stepY - perpY);
@@ -90,27 +84,36 @@ function drawObjects() {
     }
   });
 
-  // সাপ আঁকা
+  // সাপ আঁকা (স্পষ্ট মুখ সহ)
   Object.entries(snakes).forEach(([from, to]) => {
-    const head = getCoords(from);
-    const tail = getCoords(to);
-
+    const head = getCoords(from), tail = getCoords(to);
     const midX = (head.x + tail.x) / 2 + (head.x > tail.x ? 30 : -30);
     const midY = (head.y + tail.y) / 2;
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', `M ${head.x} ${head.y} Q ${midX} ${midY} ${tail.x} ${tail.y}`);
-    path.setAttribute('stroke', '#2e7d32');
-    path.setAttribute('stroke-width', '10');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke', '#2e7d32'); path.setAttribute('stroke-width', '10');
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke-linecap', 'round');
     svg.appendChild(path);
+
+    // সাপের মাথা ও মুখ
+    const headCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    headCircle.setAttribute('cx', head.x); headCircle.setAttribute('cy', head.y);
+    headCircle.setAttribute('r', '8'); headCircle.setAttribute('fill', '#1b5e20');
+    svg.appendChild(headCircle);
 
     // সাপের চোখ
     const eye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    eye.setAttribute('cx', head.x); eye.setAttribute('cy', head.y);
-    eye.setAttribute('r', '4'); eye.setAttribute('fill', '#d50000');
+    eye.setAttribute('cx', head.x - 2); eye.setAttribute('cy', head.y - 2);
+    eye.setAttribute('r', '2.5'); eye.setAttribute('fill', '#ffffff');
     svg.appendChild(eye);
+
+    // সাপের জিব
+    const tongue = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    tongue.setAttribute('x1', head.x); tongue.setAttribute('y1', head.y);
+    tongue.setAttribute('x2', head.x - 6); tongue.setAttribute('y2', head.y - 6);
+    tongue.setAttribute('stroke', '#d50000'); tongue.setAttribute('stroke-width', '2');
+    svg.appendChild(tongue);
   });
 }
 
@@ -126,7 +129,7 @@ function updatePositions() {
 }
 
 function rollDice(pIndex) {
-  if (pIndex !== currentPlayer || isRolling) return;
+  if (pIndex !== currentPlayer || isRolling || waitingForMove) return;
   isRolling = true;
 
   const btn = document.getElementById(`btn-p${pIndex}`);
@@ -136,35 +139,84 @@ function rollDice(pIndex) {
 
   setTimeout(() => {
     btn.classList.remove('rolling');
-    
-    // ১ থেকে ৬ এর সঠিক র্যান্ডম মান
-    const diceVal = Math.floor(Math.random() * 6) + 1;
-    valEl.innerText = diceVal;
+    currentDiceVal = Math.floor(Math.random() * 6) + 1;
+    valEl.innerText = currentDiceVal;
+    isRolling = false;
 
-    if (positions[currentPlayer] + diceVal <= 100) {
-      positions[currentPlayer] += diceVal;
+    // ১ পড়ার চেক
+    if (positions[currentPlayer] === 0) {
+      if (currentDiceVal === 1) {
+        prepareMove();
+      } else {
+        nextTurn();
+      }
+    } else {
+      if (positions[currentPlayer] + currentDiceVal <= 100) {
+        prepareMove();
+      } else {
+        nextTurn();
+      }
     }
+  }, 500);
+}
+
+function prepareMove() {
+  waitingForMove = true;
+  const activePlayer = document.getElementById(`player-${currentPlayer}`);
+  activePlayer.classList.add('waiting-click');
+  document.getElementById('turn-text').innerText = `প্লেয়ার ${currentPlayer + 1}-এর চাল (গুটিতে ক্লিক করুন)`;
+}
+
+function onPlayerClick(pIndex) {
+  if (!waitingForMove || pIndex !== currentPlayer) return;
+
+  const activePlayer = document.getElementById(`player-${currentPlayer}`);
+  activePlayer.classList.remove('waiting-click');
+  waitingForMove = false;
+
+  if (positions[currentPlayer] === 0 && currentDiceVal === 1) {
+    positions[currentPlayer] = 1;
+    updatePositions();
+    checkSnakeOrLadder();
+  } else {
+    movePlayerStepByStep(currentDiceVal);
+  }
+}
+
+function movePlayerStepByStep(stepsLeft) {
+  if (stepsLeft <= 0) {
+    checkSnakeOrLadder();
+    return;
+  }
+  positions[currentPlayer]++;
+  updatePositions();
+
+  setTimeout(() => {
+    movePlayerStepByStep(stepsLeft - 1);
+  }, 250);
+}
+
+function checkSnakeOrLadder() {
+  setTimeout(() => {
+    let currPos = positions[currentPlayer];
+    if (snakes[currPos]) positions[currentPlayer] = snakes[currPos];
+    if (ladders[currPos]) positions[currentPlayer] = ladders[currPos];
+
     updatePositions();
 
-    setTimeout(() => {
-      let currPos = positions[currentPlayer];
-      if (snakes[currPos]) positions[currentPlayer] = snakes[currPos];
-      if (ladders[currPos]) positions[currentPlayer] = ladders[currPos];
+    if (positions[currentPlayer] === 100) {
+      alert(`অভিনন্দন! প্লেয়ার ${currentPlayer + 1} জিতে গেছেন!`);
+      resetGame();
+      return;
+    }
 
-      updatePositions();
+    nextTurn();
+  }, 300);
+}
 
-      if (positions[currentPlayer] === 100) {
-        alert(`অভিনন্দন! প্লেয়ার ${currentPlayer + 1} জিতে গেছেন!`);
-        resetGame();
-        return;
-      }
-
-      currentPlayer = (currentPlayer + 1) % numPlayers;
-      updateTurnUI();
-      isRolling = false;
-    }, 400);
-
-  }, 500);
+function nextTurn() {
+  currentPlayer = (currentPlayer + 1) % numPlayers;
+  updateTurnUI();
 }
 
 function updateTurnUI() {
@@ -175,14 +227,15 @@ function updateTurnUI() {
       else slot.classList.remove('active');
     }
   }
-  document.getElementById('turn-text').innerText = `প্লেয়ার ${currentPlayer + 1}-এর দান`;
+  document.getElementById('turn-text').innerText = `প্লেয়ার ${currentPlayer + 1}-এর দান (ছক্কা মারুন)`;
 }
 
 function resetGame() {
   numPlayers = parseInt(document.getElementById('player-count').value);
-  positions = [1, 1, 1, 1];
+  positions = [0, 0, 0, 0];
   currentPlayer = 0;
   isRolling = false;
+  waitingForMove = false;
 
   document.getElementById('slot-p2').style.display = numPlayers >= 3 ? 'flex' : 'none';
   document.getElementById('slot-p3').style.display = numPlayers === 4 ? 'flex' : 'none';
