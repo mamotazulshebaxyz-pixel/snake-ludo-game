@@ -1,15 +1,38 @@
-body { font-family: sans-serif; text-align: center; background: #eef2f5; margin: 0; padding: 20px; }
+body { font-family: sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 15px; }
 .setup { margin-bottom: 15px; font-weight: bold; }
-.game-container { position: relative; width: 450px; height: 450px; margin: 0 auto; border: 8px solid #8b5a2b; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
+.main-wrapper { display: flex; justify-content: center; align-items: center; gap: 15px; }
+
+.board-container { position: relative; width: 450px; height: 450px; border: 6px solid #5d4037; border-radius: 8px; box-shadow: 0 6px 12px rgba(0,0,0,0.25); }
 #board { width: 100%; height: 100%; display: grid; grid-template-columns: repeat(10, 1fr); }
-.cell { display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px; font-weight: bold; font-size: 11px; position: relative; box-sizing: border-box; }
-.blue { background-color: #1565c0; color: white; }
+.cell { display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px; font-size: 10px; font-weight: bold; box-sizing: border-box; }
+.blue { background-color: #1976d2; color: white; }
 .white { background-color: #ffffff; color: #333; }
-.asset { position: absolute; font-size: 20px; pointer-events: none; }
-.player { position: absolute; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; transition: all 0.3s ease; z-index: 10; box-shadow: 0 0 4px #000; }
-.p-0 { background: #ff1744; } /* প্লেয়ার ১: লাল */
-.p-1 { background: #00e676; } /* প্লেয়ার ২: সবুজ */
-.p-2 { background: #ffea00; } /* প্লেয়ার ৩: হলুদ */
-.p-3 { background: #d500f9; } /* প্লেয়ার ৪: বেগুনি */
-#turn-text { font-size: 18px; font-weight: bold; color: #333; }
-button { padding: 10px 24px; font-size: 16px; font-weight: bold; background: #2e7d32; color: white; border: none; border-radius: 6px; cursor: pointer; }
+
+#svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
+/* প্লেয়ার গুটি */
+.player { position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #fff; transition: all 0.4s ease; z-index: 10; box-shadow: 0 0 4px #000; }
+.p-0 { background: #d32f2f; }
+.p-1 { background: #388e3c; }
+.p-2 { background: #fbc02d; }
+.p-3 { background: #7b1fa2; }
+
+.p1-c { color: #d32f2f; } .p2-c { color: #388e3c; } .p3-c { color: #fbc02d; } .p4-c { color: #7b1fa2; }
+
+/* চারপাশের ছক্কা কন্ট্রোল */
+.player-slot { display: flex; flex-direction: column; align-items: center; opacity: 0.4; pointer-events: none; transition: 0.3s; }
+.player-slot.active { opacity: 1; pointer-events: auto; }
+.p-name { font-weight: bold; margin: 0 0 5px 0; }
+
+.dice-box { perspective: 400px; width: 45px; height: 45px; cursor: pointer; }
+.dice-cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.8s ease-out; }
+.face { position: absolute; width: 45px; height: 45px; background: #2e7d32; color: #fff; font-size: 18px; font-weight: bold; display: flex; align-items: center; justify-content: center; border: 1px solid #fff; border-radius: 6px; box-shadow: inset 0 0 5px rgba(0,0,0,0.2); }
+
+.f-front  { transform: translateZ(22.5px); }
+.f-back   { transform: rotateY(180deg) translateZ(22.5px); }
+.f-right  { transform: rotateY(90deg) translateZ(22.5px); }
+.f-left   { transform: rotateY(-90deg) translateZ(22.5px); }
+.f-top    { transform: rotateX(90deg) translateZ(22.5px); }
+.f-bottom { transform: rotateX(-90deg) translateZ(22.5px); }
+
+.bottom-players { display: flex; justify-content: center; gap: 40px; margin-top: 15px; }
