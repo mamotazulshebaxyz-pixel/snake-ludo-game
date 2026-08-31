@@ -1,7 +1,8 @@
-const snakes = { 98: 40, 84: 58, 62: 19, 36: 6, 27: 5 };
-const ladders = { 4: 25, 12: 50, 29: 74, 42: 81, 67: 88 };
+// লাল লাইন অনুযায়ী নতুন সাপ (৭২ থেকে ৪) যোগ করা হয়েছে
+const snakes = { 98: 40, 84: 58, 72: 4, 62: 19, 36: 6, 27: 5 };
+const ladders = { 8: 26, 12: 50, 29: 74, 42: 81, 67: 88 };
 
-let numPlayers = 2;
+let numPlayers = 4;
 let positions = [0, 0, 0, 0]; // 0 মানে গেমের বাইরে
 let currentPlayer = 0;
 let isRolling = false;
@@ -12,10 +13,11 @@ function initBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
   
+  // নিচ থেকে শুরু (১ বাঁ দিক থেকে ডান দিকে)
   for (let row = 9; row >= 0; row--) {
-    let isEven = (9 - row) % 2 === 1;
+    let isEven = (9 - row) % 2 === 0; // বাঁ দিক থেকে ডান দিকে ১, ২, ৩ শুরু করার লজিক
     for (let col = 0; col < 10; col++) {
-      let cellNum = row * 10 + (isEven ? (10 - col) : (col + 1));
+      let cellNum = row * 10 + (isEven ? (col + 1) : (10 - col));
       const cell = document.createElement('div');
       cell.className = `cell ${(row + col) % 2 === 0 ? 'white' : 'blue'}`;
       cell.innerText = cellNum;
@@ -42,7 +44,8 @@ function createPlayers() {
 }
 
 function getCoords(num) {
-  if (num === 0) return { x: 15, y: 465 }; // বাইরে থাকার পজিশন
+  // 0 থাকলে বোর্ডের বাইরে নিচে-বামে ১ নম্বর ঘরের ঠিক বাইরে থাকবে
+  if (num === 0) return { x: -25, y: 465 }; 
   const cell = document.getElementById(`cell-${num}`);
   if (!cell) return { x: 0, y: 0 };
   const rect = cell.getBoundingClientRect();
@@ -84,7 +87,7 @@ function drawObjects() {
     }
   });
 
-  // সাপ আঁকা (স্পষ্ট মুখ সহ)
+  // সাপ আঁকা
   Object.entries(snakes).forEach(([from, to]) => {
     const head = getCoords(from), tail = getCoords(to);
     const midX = (head.x + tail.x) / 2 + (head.x > tail.x ? 30 : -30);
@@ -96,22 +99,20 @@ function drawObjects() {
     path.setAttribute('fill', 'none'); path.setAttribute('stroke-linecap', 'round');
     svg.appendChild(path);
 
-    // সাপের মাথা ও মুখ
+    // সাপের মাথা ও চোখ
     const headCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     headCircle.setAttribute('cx', head.x); headCircle.setAttribute('cy', head.y);
-    headCircle.setAttribute('r', '8'); headCircle.setAttribute('fill', '#1b5e20');
+    headCircle.setAttribute('r', '7'); headCircle.setAttribute('fill', '#1b5e20');
     svg.appendChild(headCircle);
 
-    // সাপের চোখ
     const eye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     eye.setAttribute('cx', head.x - 2); eye.setAttribute('cy', head.y - 2);
-    eye.setAttribute('r', '2.5'); eye.setAttribute('fill', '#ffffff');
+    eye.setAttribute('r', '2'); eye.setAttribute('fill', '#ffffff');
     svg.appendChild(eye);
 
-    // সাপের জিব
     const tongue = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     tongue.setAttribute('x1', head.x); tongue.setAttribute('y1', head.y);
-    tongue.setAttribute('x2', head.x - 6); tongue.setAttribute('y2', head.y - 6);
+    tongue.setAttribute('x2', head.x - 5); tongue.setAttribute('y2', head.y - 5);
     tongue.setAttribute('stroke', '#d50000'); tongue.setAttribute('stroke-width', '2');
     svg.appendChild(tongue);
   });
@@ -143,7 +144,6 @@ function rollDice(pIndex) {
     valEl.innerText = currentDiceVal;
     isRolling = false;
 
-    // ১ পড়ার চেক
     if (positions[currentPlayer] === 0) {
       if (currentDiceVal === 1) {
         prepareMove();
@@ -237,8 +237,8 @@ function resetGame() {
   isRolling = false;
   waitingForMove = false;
 
-  document.getElementById('slot-p2').style.display = numPlayers >= 3 ? 'flex' : 'none';
-  document.getElementById('slot-p3').style.display = numPlayers === 4 ? 'flex' : 'none';
+  document.getElementById('slot-p2').style.visibility = numPlayers >= 3 ? 'visible' : 'hidden';
+  document.getElementById('slot-p3').style.visibility = numPlayers === 4 ? 'visible' : 'hidden';
 
   createPlayers();
 }
