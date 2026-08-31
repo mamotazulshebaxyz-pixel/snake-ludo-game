@@ -4,6 +4,7 @@ const ladders = { 3: 22, 8: 26, 14: 70, 28: 84, 50: 91 };
 let numPlayers = 2;
 let positions = [1, 1, 1, 1];
 let currentPlayer = 0;
+let isRolling = false;
 
 function initBoard() {
   const board = document.getElementById('board');
@@ -17,15 +18,11 @@ function initBoard() {
       cell.className = `cell ${(row + col) % 2 === 0 ? 'white' : 'blue'}`;
       cell.innerText = cellNum;
       cell.id = `cell-${cellNum}`;
-
-      // সাপ ও সিঁড়ির আইকন
-      if (snakes[cellNum]) cell.innerHTML += `<span class="asset" style="right:2px; bottom:2px;">🐍</span>`;
-      if (ladders[cellNum]) cell.innerHTML += `<span class="asset" style="right:2px; bottom:2px;">🪜</span>`;
-
       board.appendChild(cell);
     }
   }
   createPlayers();
+  drawConnections();
 }
 
 function createPlayers() {
@@ -38,62 +35,117 @@ function createPlayers() {
     layer.appendChild(p);
   }
   updatePositions();
+  updateTurnUI();
 }
 
 function getCoords(num) {
   const cell = document.getElementById(`cell-${num}`);
+  if(!cell) return {x: 0, y: 0};
   const rect = cell.getBoundingClientRect();
   const parent = document.getElementById('board').getBoundingClientRect();
-  return { x: rect.left - parent.left + 12, y: rect.top - parent.top + 12 };
+  return { x: rect.left - parent.left + rect.width/2, y: rect.top - parent.top + rect.height/2 };
+}
+
+function drawConnections() {
+  const svg = document.getElementById('svg-layer');
+  svg.innerHTML = '';
+
+  const drawLine = (from, to, color, isSnake) => {
+    const p1 = getCoords(from);
+    const p2 = getCoords(to);
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    let d = `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+    
+    if(isSnake) {
+      let midX = (p1.x + p2.x)/2 + 20;
+      let midY = (p1.y + p2.y)/2;
+      d = `M ${p1.x} ${p1.y} Q ${midX} ${midY} ${p2.x} ${p2.y}`;
+    }
+
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', isSnake ? '7' : '8');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    if(!isSnake) path.setAttribute('stroke-dasharray', '4,3'); // মইয়ের মতো দেখানোর ড্যাশ
+
+    svg.appendChild(path);
+  };
+
+  Object.entries(snakes).forEach(([from, to]) => drawLine(from, to, '#ff1744', true));  // লাল দাগ = সাপ
+  Object.entries(ladders).forEach(([from, to]) => drawLine(from, to, '#00e676', false)); // সবুজ ড্যাশ = মই
 }
 
 function updatePositions() {
   for (let i = 0; i < numPlayers; i++) {
     const coords = getCoords(positions[i]);
     const p = document.getElementById(`player-${i}`);
-    // প্লেয়াররা যাতে একে অপরের উপর ঢেকে না যায়
-    p.style.left = `${coords.x + (i * 4)}px`;
-    p.style.top = `${coords.y + (i * 2)}px`;
+    if(p) {
+      p.style.left = `${coords.x - 9 + (i * 3)}px`;
+      p.style.top = `${coords.y - 9 + (i * 2)}px`;
+    }
   }
 }
 
-function rollDice() {
-  const dice = Math.floor(Math.random() * 6) + 1;
-  document.getElementById('dice-val').innerText = dice;
+function rollDice(pIndex) {
+  if (pIndex !== currentPlayer || isRolling) return;
+  isRolling = true;
 
-  if (positions[currentPlayer] + dice <= 100) {
-    positions[currentPlayer] += dice;
-  }
+  const dice = document.getElementById(`dice-${pIndex}`);
+  const diceVal = Math.floor(Math.random() * 6) + 1;
 
-  updatePositions();
+  // ৩ডি ঘোরা ঘূর্ণন
+  const xRot = Math.floor(Math.random() * 4 + 4) * 360;
+  const yRot = Math.floor(Math.random() * 4 + 4) * 360;
+  dice.style.transform = `rotateX(${xRot}deg) rotateY(${yRot}deg)`;
 
   setTimeout(() => {
-    let currPos = positions[currentPlayer];
-    if (snakes[currPos]) positions[currentPlayer] = snakes[currPos];
-    if (ladders[currPos]) positions[currentPlayer] = ladders[currPos];
-
+    if (positions[currentPlayer] + diceVal <= 100) {
+      positions[currentPlayer] += diceVal;
+    }
     updatePositions();
 
-    if (positions[currentPlayer] === 100) {
-      alert(`অভিনন্দন! প্লেয়ার ${currentPlayer + 1} জিতে গেছেন!`);
-      resetGame();
-      return;
-    }
+    setTimeout(() => {
+      let currPos = positions[currentPlayer];
+      if (snakes[currPos]) positions[currentPlayer] = snakes[currPos];
+      if (ladders[currPos]) positions[currentPlayer] = ladders[currPos];
 
-    // পরবর্তী প্লেয়ারের চাল
-    currentPlayer = (currentPlayer + 1) % numPlayers;
-    document.getElementById('turn-text').innerText = `প্লেয়ার ${currentPlayer + 1}-এর দান`;
-  }, 400);
+      updatePositions();
+
+      if (positions[currentPlayer] === 100) {
+        alert(`অভিনন্দন! প্লেয়ার ${currentPlayer + 1} জিতে গেছেন!`);
+        resetGame();
+        return;
+      }
+
+      currentPlayer = (currentPlayer + 1) % numPlayers;
+      updateTurnUI();
+      isRolling = false;
+    }, 400);
+
+  }, 800);
+}
+
+function updateTurnUI() {
+  document.querySelectorAll('.player-slot').forEach((el, idx) => {
+    if(idx === currentPlayer) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+  document.getElementById('turn-text').innerText = `প্লেয়ার ${currentPlayer + 1}-এর দান`;
 }
 
 function resetGame() {
   numPlayers = parseInt(document.getElementById('player-count').value);
   positions = [1, 1, 1, 1];
   currentPlayer = 0;
-  document.getElementById('turn-text').innerText = `প্লেয়ার ১-এর দান`;
-  document.getElementById('dice-val').innerText = '0';
+  isRolling = false;
+
+  document.getElementById('slot-p2').style.display = numPlayers >= 3 ? 'flex' : 'none';
+  document.getElementById('slot-p3').style.display = numPlayers === 4 ? 'flex' : 'none';
+
   createPlayers();
 }
 
 initBoard();
-window.onresize = updatePositions;
+window.onresize = () => { updatePositions(); drawConnections(); };
