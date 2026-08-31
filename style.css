@@ -1,11 +1,10 @@
 body { font-family: sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 10px; }
 .setup { margin-bottom: 10px; font-weight: bold; }
 
-/* গেম প্লেআউট - ৪ কোণায় প্লেয়ারদের রাখার গ্রিড */
 .game-area {
   position: relative;
   display: inline-grid;
-  grid-template-columns: 120px 480px 120px;
+  grid-template-columns: 140px 480px 140px;
   grid-template-rows: 240px 240px;
   gap: 10px;
   align-items: center;
@@ -30,40 +29,55 @@ body { font-family: sans-serif; text-align: center; background: #f0f2f5; margin:
 
 #svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
-/* প্লেয়ার ও গুটির স্টাইল */
+/* ডেমো ছবির স্টাইলের হোম ইয়ার্ড */
+.player-corner { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.corner-0 { grid-column: 1; grid-row: 1; align-self: start; }
+.corner-1 { grid-column: 3; grid-row: 1; align-self: start; }
+.corner-2 { grid-column: 1; grid-row: 2; align-self: end; }
+.corner-3 { grid-column: 3; grid-row: 2; align-self: end; }
+
+.home-yard {
+  width: 70px; height: 70px; background: #fff; border-radius: 12px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15); box-sizing: border-box;
+}
+.p-0-bg { border: 2px solid #d32f2f; } .p-1-bg { border: 2px solid #388e3c; }
+.p-2-bg { border: 2px solid #fbc02d; } .p-3-bg { border: 2px solid #7b1fa2; }
+
+.yard-circle { width: 100%; height: 100%; border-radius: 50%; opacity: 0.8; }
+
+/* গুটি স্টাইল */
 .player { position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #fff; transition: all 0.3s ease; z-index: 10; box-shadow: 0 0 4px #000; cursor: pointer; }
 .p-0 { background: #d32f2f; }
 .p-1 { background: #388e3c; }
 .p-2 { background: #fbc02d; }
 .p-3 { background: #7b1fa2; }
 
-/* লাফানোর অ্যানিমেশন */
-.player.waiting-click { animation: bounce 0.6s infinite alternate; cursor: pointer; box-shadow: 0 0 10px #ffeb3b; }
+.player.waiting-click { animation: bounce 0.6s infinite alternate; box-shadow: 0 0 12px #ffeb3b; }
+@keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
 
-@keyframes bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-12px); }
-}
-
-/* ৪ কোণার পজিশন */
-.top-left { grid-column: 1; grid-row: 1; align-self: start; }
-.top-right { grid-column: 3; grid-row: 1; align-self: start; }
-.bottom-left { grid-column: 1; grid-row: 2; align-self: end; }
-.bottom-right { grid-column: 3; grid-row: 2; align-self: end; }
-
-.p-header { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
-.color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid #fff; }
 .p1-c { color: #d32f2f; } .p2-c { color: #388e3c; } .p3-c { color: #fbc02d; } .p4-c { color: #7b1fa2; }
+.p-name { font-weight: bold; font-size: 14px; }
+.rank-badge { background: #ff9800; color: #fff; border-radius: 4px; padding: 2px 4px; font-size: 11px; margin-left: 4px; }
 
 .player-slot { display: flex; flex-direction: column; align-items: center; opacity: 0.3; pointer-events: none; transition: 0.3s; }
 .player-slot.active { opacity: 1; pointer-events: auto; }
-.p-name { font-weight: bold; }
 
-.dice-btn { width: 55px; height: 55px; background: #2e7d32; color: #fff; font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 3px solid #1b5e20; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-.rolling { animation: rotateDice 0.4s ease-in-out infinite; }
-
-@keyframes rotateDice {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.1); }
-  100% { transform: rotate(360deg) scale(1); }
+/* ৩ডি লুডু ছক্কা ডিজাইন */
+.dice-container { width: 50px; height: 50px; perspective: 600px; cursor: pointer; margin-top: 4px; }
+.dice { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.8s ease-out; }
+.face {
+  position: absolute; width: 50px; height: 50px; background: #fff; border: 2px solid #ccc;
+  border-radius: 8px; display: flex; align-items: center; justify-content: space-around;
+  box-sizing: border-box; padding: 4px; box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
 }
+.face span { width: 8px; height: 8px; background: #333; border-radius: 50%; display: block; }
+.f1 span { background: #d32f2f; width: 12px; height: 12px; }
+.col { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+
+.f1 { transform: translateZ(25px); }
+.f6 { transform: rotateY(180deg) translateZ(25px); }
+.f2 { transform: rotateY(-90deg) translateZ(25px); }
+.f5 { transform: rotateY(90deg) translateZ(25px); }
+.f3 { transform: rotateX(90deg) translateZ(25px); }
+.f4 { transform: rotateX(-90deg) translateZ(25px); }
