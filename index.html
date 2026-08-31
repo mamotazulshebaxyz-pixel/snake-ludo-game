@@ -2,11 +2,11 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>শাপ-সিঁড়ি মাল্টিপ্লেয়ার গেম</title>
+  <title>সাপ - সিঁড়ি</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>শাপ-সিঁড়ি গেম (১-১০০)</h1>
+  <h1>সাপ - সিঁড়ি</h1>
   
   <div class="setup">
     <label>প্লেয়ার সংখ্যা: </label>
@@ -17,16 +17,66 @@
     </select>
   </div>
 
-  <div class="game-container">
-    <div id="board"></div>
-    <div id="players-layer"></div>
+  <div class="main-wrapper">
+    <!-- প্লেয়ার ১ বোতাম (বাম) -->
+    <div class="player-slot slot-0">
+      <p class="p-name p1-c">প্লেয়ার ১</p>
+      <div class="dice-box" id="btn-p0" onclick="rollDice(0)">
+        <div class="dice-cube" id="dice-0">
+          <div class="face f-front">1</div>
+          <div class="face f-back">6</div>
+          <div class="face f-right">3</div>
+          <div class="face f-left">4</div>
+          <div class="face f-top">5</div>
+          <div class="face f-bottom">2</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="board-container">
+      <div id="board"></div>
+      <svg id="svg-layer"></svg>
+      <div id="players-layer"></div>
+    </div>
+
+    <!-- প্লেয়ার ২ বোতাম (ডান) -->
+    <div class="player-slot slot-1">
+      <p class="p-name p2-c">প্লেয়ার ২</p>
+      <div class="dice-box" id="btn-p1" onclick="rollDice(1)">
+        <div class="dice-cube" id="dice-1">
+          <div class="face f-front">1</div>
+          <div class="face f-back">6</div>
+          <div class="face f-right">3</div>
+          <div class="face f-left">4</div>
+          <div class="face f-top">5</div>
+          <div class="face f-bottom">2</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="controls">
-    <p id="turn-text">প্লেয়ার ১-এর দান</p>
-    <button onclick="rollDice()">ছক্কা মারুন</button>
-    <p>ছক্কার মান: <span id="dice-val">0</span></p>
+  <!-- প্লেয়ার ৩ ও ৪ (নিচে) -->
+  <div class="bottom-players">
+    <div class="player-slot slot-2" id="slot-p2" style="display:none;">
+      <p class="p-name p3-c">প্লেয়ার ৩</p>
+      <div class="dice-box" id="btn-p2" onclick="rollDice(2)">
+        <div class="dice-cube" id="dice-2">
+          <div class="face f-front">1</div><div class="face f-back">6</div><div class="face f-right">3</div><div class="face f-left">4</div><div class="face f-top">5</div><div class="face f-bottom">2</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="player-slot slot-3" id="slot-p3" style="display:none;">
+      <p class="p-name p4-c">প্লেয়ার ৪</p>
+      <div class="dice-box" id="btn-p3" onclick="rollDice(3)">
+        <div class="dice-cube" id="dice-3">
+          <div class="face f-front">1</div><div class="face f-back">6</div><div class="face f-right">3</div><div class="face f-left">4</div><div class="face f-top">5</div><div class="face f-bottom">2</div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <h2 id="turn-text">প্লেয়ার ১-এর দান</h2>
 
   <script src="script.js"></script>
 </body>
